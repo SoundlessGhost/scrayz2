@@ -230,7 +230,7 @@ export function UseCasesSection() {
               {/* Header */}
               <div className="flex items-start gap-4 mb-6">
                 <div
-                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center shrink-0"
                   style={{ background: getGradient(activeCase.color) }}
                 >
                   <activeCase.icon
@@ -263,7 +263,7 @@ export function UseCasesSection() {
                       className="flex items-start gap-3"
                     >
                       <div
-                        className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-semibold"
+                        className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-xs font-semibold"
                         style={{
                           background: getGradient(activeCase.color),
                           color: getIconColor(activeCase.color),

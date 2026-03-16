@@ -695,7 +695,7 @@ const LinkedInScraperDashboard = () => {
                         {usageData.totals.today}
                       </p>
                     </div>
-                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
+                    <div className="bg-linear-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
                       <p className="text-blue-100 text-sm mb-2 font-medium">
                         This Month
                       </p>
