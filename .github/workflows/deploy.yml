@@ -1,0 +1,43 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/Scrayz
+
+            # Pull latest changes
+            git pull origin main
+
+            # ensure /usr/local/bin is in PATH
+            export PATH=$PATH:/usr/local/bin
+
+            # Load nvm so Node and pm2 are available
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+            # Install dependencies
+            npm install
+
+            # Build with Node memory set to 1500 MB
+            NODE_OPTIONS="--max-old-space-size=1200" npm run build
+
+            # Restart frontend in PM2
+            pm2 restart scrazy-frontend
