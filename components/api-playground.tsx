@@ -117,22 +117,24 @@ const mockResponses: Record<string, object> = {
   },
 };
 
-// Typing animation hook
+// FIX 1: Typing animation hook - fixed to preserve text after completion
 function useTypingEffect(
   text: string,
   speed: number = 30,
-  trigger: boolean = true,
+  shouldAnimate: boolean = true,
 ) {
   const [displayedText, setDisplayedText] = useState("");
   const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
-    if (!trigger) {
-      setDisplayedText("");
-      setIsComplete(false);
+    // If not animating, show full text immediately
+    if (!shouldAnimate) {
+      setDisplayedText(text);
+      setIsComplete(true);
       return;
     }
 
+    // Reset and start animation when text changes
     let index = 0;
     setDisplayedText("");
     setIsComplete(false);
@@ -148,7 +150,7 @@ function useTypingEffect(
     }, speed);
 
     return () => clearInterval(timer);
-  }, [text, speed, trigger]);
+  }, [text, speed, shouldAnimate]);
 
   return { displayedText, isComplete };
 }
@@ -168,7 +170,7 @@ function JsonHighlightLight({ data }: { data: object }) {
 
   return (
     <pre
-      className="text-sm font-mono leading-relaxed text-[#1a1a2e]"
+      className="text-xs sm:text-sm font-mono leading-relaxed text-[#1a1a2e] whitespace-pre"
       dangerouslySetInnerHTML={{ __html: highlightJson(jsonString) }}
     />
   );
@@ -231,11 +233,15 @@ export function ApiPlayground() {
 
   const curlCommand = getCurlCommand(currentEndpoint);
 
+  // FIX 1: Only animate on initial load or endpoint change, not on response
   const { displayedText, isComplete } = useTypingEffect(
     curlCommand,
     15,
-    !isRunning && !showResponse,
+    !showResponse && !isRunning, // Only animate when not showing response and not running
   );
+
+  // Determine what text to show in request panel
+  const requestText = showResponse || isRunning ? curlCommand : displayedText;
 
   const handleRun = useCallback(async () => {
     setIsRunning(true);
@@ -430,7 +436,7 @@ export function ApiPlayground() {
             {/* Terminal Body */}
             <div className="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
               {/* Request Panel */}
-              <div className="p-4 sm:p-6 bg-linear-to-br from-white to-[#fff1eb]/30">
+              <div className="p-4 sm:p-6 bg-linear-to-br from-white to-[#fff1eb]/30 min-w-0">
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-[#0ea5e9] text-sm font-medium">
                     REQUEST
@@ -438,21 +444,24 @@ export function ApiPlayground() {
                   <div className="flex-1 h-px bg-gray-200" />
                 </div>
 
-                <div className="font-mono text-sm leading-relaxed min-h-50 sm:min-h-60 bg-[#fafafa] rounded-xl p-4 border border-gray-100">
-                  <span className="text-[#0ea5e9]">$</span>{" "}
-                  <span className="text-[#1a1a2e] whitespace-pre-wrap break-all">
-                    {displayedText}
-                    {!isComplete && !showResponse && !isRunning && (
-                      <motion.span
-                        animate={{ opacity: [1, 0] }}
-                        transition={{ duration: 0.5, repeat: Infinity }}
-                        className="inline-block w-2 h-4 bg-[#0ea5e9] ml-0.5 align-middle"
-                      />
-                    )}
-                  </span>
+                {/* FIX 2: Added overflow-x-auto and proper scrolling */}
+                <div className="font-mono text-xs sm:text-sm leading-relaxed min-h-50 sm:min-h-60 bg-[#fafafa] rounded-xl p-4 border border-gray-100 overflow-x-auto">
+                  <div className="min-w-max">
+                    <span className="text-[#0ea5e9]">$</span>{" "}
+                    <span className="text-[#1a1a2e] whitespace-pre">
+                      {requestText}
+                      {!isComplete && !showResponse && !isRunning && (
+                        <motion.span
+                          animate={{ opacity: [1, 0] }}
+                          transition={{ duration: 0.5, repeat: Infinity }}
+                          className="inline-block w-2 h-4 bg-[#0ea5e9] ml-0.5 align-middle"
+                        />
+                      )}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Run Button */}
+                {/* FIX 2: Run Button - ensure text doesn't overflow */}
                 <motion.button
                   onClick={handleRun}
                   disabled={isRunning}
@@ -474,24 +483,24 @@ export function ApiPlayground() {
                           repeat: Infinity,
                           ease: "linear",
                         }}
-                        className="w-5 h-5 border-2 border-[#1a1a2e] border-t-transparent rounded-full"
+                        className="w-5 h-5 border-2 border-[#1a1a2e] border-t-transparent rounded-full shrink-0"
                       />
-                      <span>Fetching data...</span>
+                      <span className="truncate">Fetching...</span>
                     </>
                   ) : (
                     <>
-                      <Play className="w-5 h-5" />
-                      <span>Run Request</span>
+                      <Play className="w-5 h-5 shrink-0" />
+                      <span className="truncate">Run Request</span>
                     </>
                   )}
                 </motion.button>
               </div>
 
               {/* Response Panel */}
-              <div className="p-4 sm:p-6 bg-linear-to-bl from-white to-[#ace0f9]/10">
+              <div className="p-4 sm:p-6 bg-linear-to-bl from-white to-[#ace0f9]/10 min-w-0">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[#0ea5e9] text-sm font-medium">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-[#0ea5e9] text-sm font-medium shrink-0">
                       RESPONSE
                     </span>
                     <div className="flex-1 h-px bg-gray-200" />
@@ -502,12 +511,12 @@ export function ApiPlayground() {
                         initial={{ opacity: 0, x: 10 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0 }}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 shrink-0 ml-2"
                       >
                         <span className="px-2 py-0.5 rounded bg-green-100 text-green-600 text-xs font-mono">
-                          200 OK
+                          200
                         </span>
-                        <span className="text-[#666677] text-xs font-mono">
+                        <span className="text-[#666677] text-xs font-mono hidden sm:inline">
                           {responseTime}ms
                         </span>
                       </motion.div>
@@ -515,7 +524,8 @@ export function ApiPlayground() {
                   </AnimatePresence>
                 </div>
 
-                <div className="min-h-50 sm:min-h-60 overflow-auto bg-[#fafafa] rounded-xl p-4 border border-gray-100">
+                {/* FIX 2: Added overflow-x-auto for JSON response */}
+                <div className="min-h-50 sm:min-h-60 overflow-x-auto overflow-y-auto bg-[#fafafa] rounded-xl p-4 border border-gray-100">
                   <AnimatePresence mode="wait">
                     {isRunning ? (
                       <motion.div
@@ -534,7 +544,7 @@ export function ApiPlayground() {
                             opacity: 0.5,
                           }}
                         />
-                        <span className="text-sm">Processing request...</span>
+                        <span className="text-sm">Processing...</span>
                       </motion.div>
                     ) : showResponse ? (
                       <motion.div
@@ -543,7 +553,7 @@ export function ApiPlayground() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.4 }}
-                        className="text-[#1a1a2e]"
+                        className="text-[#1a1a2e] min-w-max"
                       >
                         <JsonHighlightLight
                           data={mockResponses[activeEndpoint]}
@@ -558,7 +568,7 @@ export function ApiPlayground() {
                         className="flex flex-col items-center justify-center h-48 text-[#666677]"
                       >
                         <Terminal className="w-10 h-10 mb-3 opacity-30" />
-                        <span className="text-sm">
+                        <span className="text-sm text-center px-2">
                           Click &quot;Run Request&quot; to see the response
                         </span>
                       </motion.div>
@@ -570,18 +580,18 @@ export function ApiPlayground() {
           </div>
         </motion.div>
 
-        {/* Stats Bar */}
+        {/* Stats Bar - FIX 2: Better mobile layout */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4"
+          className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4"
         >
           {[
             {
               icon: Zap,
-              label: "Response Time",
+              label: "Response",
               value: "~200ms",
               color: "#0ea5e9",
             },
@@ -607,19 +617,24 @@ export function ApiPlayground() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: 0.5 + index * 0.1 }}
-                className="flex items-center gap-3 bg-white rounded-xl p-4 border border-gray-100 hover:border-[#ace0f9]/50 hover:shadow-lg transition-all duration-300"
+                className="flex items-center gap-2 sm:gap-3 bg-white rounded-xl p-3 sm:p-4 border border-gray-100 hover:border-[#ace0f9]/50 hover:shadow-lg transition-all duration-300"
               >
                 <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0"
                   style={{ background: `${stat.color}20` }}
                 >
-                  <Icon className="w-5 h-5" style={{ color: stat.color }} />
+                  <Icon
+                    className="w-4 h-4 sm:w-5 sm:h-5"
+                    style={{ color: stat.color }}
+                  />
                 </div>
-                <div>
-                  <div className="text-lg font-bold text-[#1a1a2e]">
+                <div className="min-w-0">
+                  <div className="text-sm sm:text-lg font-bold text-[#1a1a2e] truncate">
                     {stat.value}
                   </div>
-                  <div className="text-xs text-[#666677]">{stat.label}</div>
+                  <div className="text-xs text-[#666677] truncate">
+                    {stat.label}
+                  </div>
                 </div>
               </motion.div>
             );
