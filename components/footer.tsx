@@ -7,7 +7,7 @@ export function Footer() {
   return (
     <footer className="mt-20 border-t border-slate-200/80 bg-white">
       {/* soft top glow like your hero */}
-      <div className="h-2 w-full bg-gradient-to-r from-transparent via-teal-100/60 to-transparent" />
+      <div className="h-2 w-full bg-linear-to-r from-transparent via-teal-100/60 to-transparent" />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-5">
@@ -15,7 +15,7 @@ export function Footer() {
           <div className="md:col-span-2">
             <Link href="/" className="inline-flex items-center gap-2">
               <span className="inline-grid h-9 w-9 place-items-center rounded-full ring-2 ring-[#164e63] overflow-hidden">
-                <span className="h-full w-full bg-gradient-to-br from-[#164e63] to-[#0f3a4a]" />
+                <span className="h-full w-full bg-linear-to-br from-[#164e63] to-[#0f3a4a]" />
               </span>
               <span className="text-lg font-extrabold tracking-tight text-[#164e63]">
                 Scrayz
@@ -134,7 +134,7 @@ export function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="my-8 h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+        <div className="my-8 h-px w-full bg-linear-to-r from-transparent via-slate-200 to-transparent" />
 
         {/* Bottom bar */}
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">

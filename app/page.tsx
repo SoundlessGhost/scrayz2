@@ -14,10 +14,11 @@ export default function HomePage() {
       <HeroSection />
       <FeaturesGrid />
       <ApiPlayground />
+      {/* 
       <UseCasesSection />
       <PricingSection />
       <DocsSection />
-      <Footer />
+      <Footer /> */}
     </main>
   );
 }

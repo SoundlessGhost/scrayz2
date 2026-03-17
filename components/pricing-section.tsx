@@ -126,7 +126,7 @@ const faqs = [
   {
     question: "How does the API pricing work?",
     answer:
-      "Our pricing is based on the number of API calls per month. Each successful request counts as one API call. Failed requests due to our service issues don't count against your quota.",
+      "Our pricing is based on the number of API calls per month. Each successful request counts as one API call. Failed requests due to our service issues don&apos;t count against your quota.",
   },
   {
     question: "What happens if I exceed my monthly quota?",

@@ -1,6 +1,6 @@
 "use client";
 import { toast } from "sonner";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   X,
   Clock,
@@ -24,14 +24,50 @@ import {
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8777";
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "replace_with_your_api_key";
 
+interface Job {
+  job_id: string;
+  file_name: string;
+  state: string;
+  total: number;
+  done: number;
+  success: number;
+  failed: number;
+  created_at: number;
+  finished_at?: number;
+  last_error?: string;
+}
+
+interface DayData {
+  total: number;
+  jobs: unknown[];
+}
+
+interface UsageData {
+  totals: {
+    today: number;
+    this_month: number;
+    this_year: number;
+    lifetime: number;
+  };
+  monthly_breakdown: Record<string, Record<string, DayData>>;
+}
+
+interface BadBackend {
+  url: string;
+  reason: string;
+  first_seen: number;
+  last_seen: number;
+  count: number;
+}
+
 const LinkedInScraperDashboard = () => {
-  const [jobs, setJobs] = useState<Record<string, unknown>[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [retries, setRetries] = useState<number>(5);
   const [timeout, setTimeoutVal] = useState<number>(40);
   const [loading, setLoading] = useState<boolean>(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [jobScope, setJobScope] = useState("all");
-  const [usageData, setUsageData] = useState<Record<string, unknown> | null>(null);
+  const [usageData, setUsageData] = useState<UsageData | null>(null);
   const [uploading, setUploading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState("jobs");
   const [concurrency, setConcurrency] = useState(50);
@@ -39,30 +75,33 @@ const LinkedInScraperDashboard = () => {
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
   const [backends, setBackends] = useState<string[]>([]);
-  const [badBackends, setBadBackends] = useState<string[]>([]);
+  const [badBackends, setBadBackends] = useState<BadBackend[]>([]);
   const [newBackendUrl, setNewBackendUrl] = useState("");
   const [adminApiError, setAdminApiError] = useState<string | null>(null);
 
   // ==================== JOBS ====================
-  const fetchJobs = async (showLoader: boolean = false) => {
-    if (showLoader) setLoading(true);
-    setApiError(null);
-    try {
-      const res = await fetch(`${API_BASE}/jobs?limit=50&scope=${jobScope}`, {
-        headers: { "X-API-Key": API_KEY, accept: "application/json" },
-      });
-      if (!res.ok) throw new Error(`API Error: ${res.status}`);
-      const data = await res.json();
-      setJobs(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Failed to fetch jobs:", err);
-      setApiError(err.message || "Failed to connect to API");
-      setJobs([]);
-    } finally {
-      if (showLoader) setLoading(false);
-      setInitialLoading(false);
-    }
-  };
+  const fetchJobs = useCallback(
+    async (showLoader: boolean = false) => {
+      if (showLoader) setLoading(true);
+      setApiError(null);
+      try {
+        const res = await fetch(`${API_BASE}/jobs?limit=50&scope=${jobScope}`, {
+          headers: { "X-API-Key": API_KEY, accept: "application/json" },
+        });
+        if (!res.ok) throw new Error(`API Error: ${res.status}`);
+        const data = await res.json();
+        setJobs(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch jobs:", err);
+        setApiError(err instanceof Error ? err.message : "Failed to connect to API");
+        setJobs([]);
+      } finally {
+        if (showLoader) setLoading(false);
+        setInitialLoading(false);
+      }
+    },
+    [jobScope]
+  );
 
   // ==================== USAGE ====================
   const fetchUsage = async () => {
@@ -78,7 +117,7 @@ const LinkedInScraperDashboard = () => {
     } catch (err) {
       console.error("Failed to fetch usage:", err);
       setUsageData(null);
-      setApiError(err.message || "Failed to connect to API");
+      setApiError(err instanceof Error ? err.message : "Failed to connect to API");
     } finally {
       setLoading(false);
     }
@@ -96,7 +135,7 @@ const LinkedInScraperDashboard = () => {
       setBackends(data.backends || []);
     } catch (err) {
       console.error("Failed to fetch backends:", err);
-      setAdminApiError(err.message || "Failed to fetch backends");
+      setAdminApiError(err instanceof Error ? err.message : "Failed to fetch backends");
     }
   };
 
@@ -111,7 +150,7 @@ const LinkedInScraperDashboard = () => {
       setBadBackends(data.bad_backends || []);
     } catch (err) {
       console.error("Failed to fetch bad backends:", err);
-      setAdminApiError(err.message || "Failed to fetch bad backends");
+      setAdminApiError(err instanceof Error ? err.message : "Failed to fetch bad backends");
     }
   };
 
@@ -134,7 +173,7 @@ const LinkedInScraperDashboard = () => {
       toast("Backend added successfully!");
     } catch (err) {
       console.error("Failed to add backend:", err);
-      setAdminApiError(err.message || "Failed to add backend");
+      setAdminApiError(err instanceof Error ? err.message : "Failed to add backend");
     }
   };
 
@@ -152,7 +191,7 @@ const LinkedInScraperDashboard = () => {
       toast("Backend removed successfully!");
     } catch (err) {
       console.error("Failed to remove backend:", err);
-      setAdminApiError(err.message || "Failed to remove backend");
+      setAdminApiError(err instanceof Error ? err.message : "Failed to remove backend");
     }
   };
 
@@ -170,7 +209,7 @@ const LinkedInScraperDashboard = () => {
       toast("Backends reset to default!");
     } catch (err) {
       console.error("Failed to reset backends:", err);
-      setAdminApiError(err.message || "Failed to reset backends");
+      setAdminApiError(err instanceof Error ? err.message : "Failed to reset backends");
     }
   };
 
@@ -198,14 +237,15 @@ const LinkedInScraperDashboard = () => {
       fetchJobs(false);
     } catch (err) {
       console.error("Upload error:", err);
-      setApiError(err.message || "Failed to upload file");
-      toast("Failed to create job: " + err.message);
+      const message = err instanceof Error ? err.message : "Failed to upload file";
+      setApiError(message);
+      toast("Failed to create job: " + message);
     } finally {
       setUploading(false);
     }
   };
 
-  const cancelJob = async (jobId) => {
+  const cancelJob = async (jobId: string) => {
     try {
       await fetch(`${API_BASE}/jobs/${jobId}/cancel`, {
         method: "POST",
@@ -253,7 +293,7 @@ const LinkedInScraperDashboard = () => {
     }
   };
 
-  const downloadResults = async (jobId) => {
+  const downloadResults = async (jobId: string) => {
     try {
       const res = await fetch(`${API_BASE}/jobs/${jobId}/download`, {
         headers: { "X-API-Key": API_KEY },
@@ -268,8 +308,8 @@ const LinkedInScraperDashboard = () => {
   };
 
   // ==================== UTILITIES ====================
-  const getFilterLabel = (value) => {
-    const labels = {
+  const getFilterLabel = (value: string) => {
+    const labels: Record<string, string> = {
       all: "All",
       today: "Today",
       yesterday: "Yesterday",
@@ -279,18 +319,18 @@ const LinkedInScraperDashboard = () => {
     return labels[value] || "All";
   };
 
-  const handleFilterSelect = (value) => {
+  const handleFilterSelect = (value: string) => {
     setJobScope(value);
     setDropdownOpen(false);
     fetchJobs(true);
   };
 
-  const formatDate = (timestamp) => {
+  const formatDate = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleString();
   };
 
-  const getStateBadge = (state) => {
-    const badges = {
+  const getStateBadge = (state: string) => {
+    const badges: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
       queued: { bg: "bg-gray-100", text: "text-gray-700", icon: Clock },
       waiting_capacity: {
         bg: "bg-yellow-100",
@@ -316,7 +356,7 @@ const LinkedInScraperDashboard = () => {
   // ==================== EFFECTS ====================
   useEffect(() => {
     fetchJobs(true);
-  }, []);
+  }, [fetchJobs]);
 
   useEffect(() => {
     const hasActiveJobs = jobs.some(
@@ -330,7 +370,7 @@ const LinkedInScraperDashboard = () => {
       const intervalId = setInterval(() => fetchJobs(false), 5000);
       return () => clearInterval(intervalId);
     }
-  }, [jobs]);
+  }, [fetchJobs, jobs]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -383,7 +423,7 @@ const LinkedInScraperDashboard = () => {
         {apiError && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
             <div className="flex items-start gap-4">
-              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+              <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
               <div className="flex-1">
                 <h3 className="text-red-900 font-semibold mb-2">Error</h3>
                 <p className="text-red-700">{apiError}</p>
@@ -456,7 +496,7 @@ const LinkedInScraperDashboard = () => {
                     <input
                       type="number"
                       value={timeout}
-                      onChange={(e) => setTimeout(Number(e.target.value))}
+                      onChange={(e) => setTimeoutVal(Number(e.target.value))}
                       className="w-full bg-gray-50 text-gray-900 rounded-lg px-4 py-3 border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
                     />
                   </div>
@@ -489,7 +529,7 @@ const LinkedInScraperDashboard = () => {
                   <div className="relative">
                     <button
                       onClick={() => setDropdownOpen(!dropdownOpen)}
-                      className="bg-white text-gray-900 rounded-lg px-4 py-2.5 border border-gray-300 hover:border-teal-500 flex items-center gap-2 min-w-[200px] justify-between"
+                      className="bg-white text-gray-900 rounded-lg px-4 py-2.5 border border-gray-300 hover:border-teal-500 flex items-center gap-2 min-w-50 justify-between"
                     >
                       <span>{getFilterLabel(jobScope)}</span>
                       <ChevronDown
@@ -706,7 +746,7 @@ const LinkedInScraperDashboard = () => {
                     Usage Statistics
                   </h2>
                   <div className="grid md:grid-cols-4 gap-6">
-                    <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
+                    <div className="bg-linear-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
                       <p className="text-purple-100 text-sm mb-2 font-medium">
                         Today
                       </p>
@@ -714,7 +754,7 @@ const LinkedInScraperDashboard = () => {
                         {usageData.totals.today}
                       </p>
                     </div>
-                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
+                    <div className="bg-linear-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
                       <p className="text-blue-100 text-sm mb-2 font-medium">
                         This Month
                       </p>
@@ -722,7 +762,7 @@ const LinkedInScraperDashboard = () => {
                         {usageData.totals.this_month}
                       </p>
                     </div>
-                    <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
+                    <div className="bg-linear-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
                       <p className="text-green-100 text-sm mb-2 font-medium">
                         This Year
                       </p>
@@ -730,7 +770,7 @@ const LinkedInScraperDashboard = () => {
                         {usageData.totals.this_year}
                       </p>
                     </div>
-                    <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
+                    <div className="bg-linear-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
                       <p className="text-orange-100 text-sm mb-2 font-medium">
                         Lifetime
                       </p>
@@ -794,7 +834,7 @@ const LinkedInScraperDashboard = () => {
             {adminApiError && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-6">
                 <div className="flex items-start gap-4">
-                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                  <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
                   <div className="flex-1">
                     <h3 className="text-red-900 font-semibold mb-2">Error</h3>
                     <p className="text-red-700">{adminApiError}</p>

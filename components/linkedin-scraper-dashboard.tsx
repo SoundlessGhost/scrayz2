@@ -1,6 +1,6 @@
 "use client";
 import { toast } from "sonner";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   X,
   Key,
@@ -234,7 +234,7 @@ const LinkedInScraperDashboard: React.FC = () => {
 
   // ==================== JOBS ====================
 
-  const fetchJobs = async (showLoader: boolean = false): Promise<void> => {
+  const fetchJobs = useCallback(async (showLoader: boolean = false): Promise<void> => {
     if (!apiKey.trim()) return;
     if (showLoader) setLoading(true);
     setApiError(null);
@@ -257,7 +257,7 @@ const LinkedInScraperDashboard: React.FC = () => {
       if (showLoader) setLoading(false);
       setInitialLoading(false);
     }
-  };
+  }, [apiKey, jobScope]);
 
   const fetchJobsWithKey = async (key: string): Promise<void> => {
     if (!key.trim()) return;
@@ -504,13 +504,13 @@ const LinkedInScraperDashboard: React.FC = () => {
       setHasLoadedOnce(true);
       fetchJobs(true);
     }
-  }, [apiKey, isApiKeySaved]);
+  }, [apiKey, fetchJobs, hasLoadedOnce, isApiKeySaved]);
 
   useEffect(() => {
     if (apiKey.trim() && hasLoadedOnce) {
       fetchJobs(true);
     }
-  }, [jobScope]);
+  }, [apiKey, fetchJobs, hasLoadedOnce, jobScope]);
 
   useEffect(() => {
     if (!apiKey.trim() || !hasLoadedOnce) return;
@@ -529,7 +529,7 @@ const LinkedInScraperDashboard: React.FC = () => {
       );
       return () => clearInterval(intervalId);
     }
-  }, [jobs, apiKey, hasLoadedOnce]);
+  }, [jobs, apiKey, hasLoadedOnce, fetchJobs]);
 
   // ==================== RENDER ====================
 
@@ -832,7 +832,7 @@ const LinkedInScraperDashboard: React.FC = () => {
                     <button
                       onClick={() => setDropdownOpen(!dropdownOpen)}
                       disabled={!isApiKeySaved}
-                      className="bg-white text-gray-900 rounded-lg px-4 py-2.5 border border-gray-300 hover:border-teal-500 flex items-center gap-2 min-w-[200px] justify-between disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      className="bg-white text-gray-900 rounded-lg px-4 py-2.5 border border-gray-300 hover:border-teal-500 flex items-center gap-2 min-w-50 justify-between disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       <span>{getFilterLabel(jobScope)}</span>
                       <ChevronDown
@@ -1080,7 +1080,7 @@ const LinkedInScraperDashboard: React.FC = () => {
             ) : usageData ? (
               <>
                 {/* HERO STATS */}
-                <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-8 shadow-xl">
+                <div className="bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-8 shadow-xl">
                   <div className="flex items-center justify-between mb-8">
                     <div>
                       <h2 className="text-2xl font-bold text-white mb-1">
@@ -1102,8 +1102,8 @@ const LinkedInScraperDashboard: React.FC = () => {
 
                   <div className="grid md:grid-cols-4 gap-6">
                     <div className="relative group">
-                      <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-violet-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
-                      <div className="relative bg-gradient-to-br from-violet-600 to-violet-500 rounded-2xl p-6 border border-violet-400/20">
+                      <div className="absolute inset-0 bg-linear-to-r from-violet-600 to-violet-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
+                      <div className="relative bg-linear-to-br from-violet-600 to-violet-500 rounded-2xl p-6 border border-violet-400/20">
                         <div className="flex items-center justify-between mb-4">
                           <div className="bg-white/20 rounded-lg p-2">
                             <Clock className="h-5 w-5 text-white" />
@@ -1122,8 +1122,8 @@ const LinkedInScraperDashboard: React.FC = () => {
                     </div>
 
                     <div className="relative group">
-                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
-                      <div className="relative bg-gradient-to-br from-cyan-600 to-cyan-500 rounded-2xl p-6 border border-cyan-400/20">
+                      <div className="absolute inset-0 bg-linear-to-r from-cyan-600 to-cyan-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
+                      <div className="relative bg-linear-to-br from-cyan-600 to-cyan-500 rounded-2xl p-6 border border-cyan-400/20">
                         <div className="flex items-center justify-between mb-4">
                           <div className="bg-white/20 rounded-lg p-2">
                             <Calendar className="h-5 w-5 text-white" />
@@ -1142,8 +1142,8 @@ const LinkedInScraperDashboard: React.FC = () => {
                     </div>
 
                     <div className="relative group">
-                      <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
-                      <div className="relative bg-gradient-to-br from-emerald-600 to-emerald-500 rounded-2xl p-6 border border-emerald-400/20">
+                      <div className="absolute inset-0 bg-linear-to-r from-emerald-600 to-emerald-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
+                      <div className="relative bg-linear-to-br from-emerald-600 to-emerald-500 rounded-2xl p-6 border border-emerald-400/20">
                         <div className="flex items-center justify-between mb-4">
                           <div className="bg-white/20 rounded-lg p-2">
                             <TrendingUp className="h-5 w-5 text-white" />
@@ -1162,8 +1162,8 @@ const LinkedInScraperDashboard: React.FC = () => {
                     </div>
 
                     <div className="relative group">
-                      <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-amber-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
-                      <div className="relative bg-gradient-to-br from-amber-600 to-amber-500 rounded-2xl p-6 border border-amber-400/20">
+                      <div className="absolute inset-0 bg-linear-to-r from-amber-600 to-amber-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
+                      <div className="relative bg-linear-to-br from-amber-600 to-amber-500 rounded-2xl p-6 border border-amber-400/20">
                         <div className="flex items-center justify-between mb-4">
                           <div className="bg-white/20 rounded-lg p-2">
                             <CheckCircle className="h-5 w-5 text-white" />
@@ -1185,7 +1185,7 @@ const LinkedInScraperDashboard: React.FC = () => {
 
                 {/* MONTHLY BREAKDOWN */}
                 <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-                  <div className="bg-gradient-to-r from-gray-50 to-white px-8 py-6 border-b border-gray-200">
+                  <div className="bg-linear-to-r from-gray-50 to-white px-8 py-6 border-b border-gray-200">
                     <h2 className="text-xl font-bold text-gray-900">
                       Monthly Breakdown
                     </h2>
@@ -1271,7 +1271,7 @@ const LinkedInScraperDashboard: React.FC = () => {
 
                                     <div className="bg-gray-200 rounded-full h-2 overflow-hidden">
                                       <div
-                                        className="bg-gradient-to-r from-teal-500 to-teal-400 h-full rounded-full transition-all duration-500"
+                                        className="bg-linear-to-r from-teal-500 to-teal-400 h-full rounded-full transition-all duration-500"
                                         style={{
                                           width: `${Math.min(percentage, 100)}%`,
                                         }}

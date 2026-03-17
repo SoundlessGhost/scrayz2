@@ -1,6 +1,6 @@
 "use client";
 import { toast } from "sonner";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   X,
@@ -34,14 +34,31 @@ interface Job {
   last_error?: string;
 }
 
+interface DayData {
+  total: number;
+  jobs: string[];
+}
+
+interface UsageData {
+  totals: {
+    today: number;
+    this_month: number;
+    this_year: number;
+    lifetime: number;
+  };
+  monthly_breakdown: Record<string, Record<string, DayData>>;
+}
+
+type JobScope = "all" | "today" | "yesterday" | "day_before_yesterday" | "this_month";
+
 const LinkedInScraperDashboard = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [retries, setRetries] = useState(3);
-  const [timeout, setTimeout] = useState(30);
+  const [timeoutSeconds, setTimeoutSeconds] = useState(30);
   const [loading, setLoading] = useState<boolean>(false);
   const [apiError, setApiError] = useState<string | null>(null);
-  const [jobScope, setJobScope] = useState("all");
-  const [usageData, setUsageData] = useState<any>(null);
+  const [jobScope, setJobScope] = useState<JobScope>("all");
+  const [usageData, setUsageData] = useState<UsageData | null>(null);
   const [uploading, setUploading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState("jobs");
   const [concurrency, setConcurrency] = useState(50);
@@ -50,7 +67,7 @@ const LinkedInScraperDashboard = () => {
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
 
   // FETCH JOBS
-  const fetchJobs = async (showLoader: boolean = false) => {
+  const fetchJobs = useCallback(async (showLoader: boolean = false) => {
     if (showLoader) {
       setLoading(true);
     }
@@ -85,7 +102,7 @@ const LinkedInScraperDashboard = () => {
       }
       setInitialLoading(false);
     }
-  };
+  }, [jobScope]);
 
   // FETCH USAGE DATA
   const fetchUsage = async () => {
@@ -123,7 +140,7 @@ const LinkedInScraperDashboard = () => {
     formData.append("file", selectedFile);
     formData.append("concurrency", concurrency.toString());
     formData.append("retries", retries.toString());
-    formData.append("timeout_s", timeout.toString());
+    formData.append("timeout_s", timeoutSeconds.toString());
 
     try {
       const res = await fetch(`${API_BASE}/jobs`, {
@@ -151,11 +168,6 @@ const LinkedInScraperDashboard = () => {
   };
 
   // CANCEL JOB
-  interface CancelJobResponse {
-    success: boolean;
-    message?: string;
-  }
-
   const cancelJob = async (jobId: string | number): Promise<void> => {
     try {
       const res = await fetch(`${API_BASE}/jobs/${jobId}/cancel`, {
@@ -190,16 +202,9 @@ const LinkedInScraperDashboard = () => {
   };
 
   // 1. FILTER LABEL SHOWER
-  interface FilterLabels {
-    all: string;
-    today: string;
-    yesterday: string;
-    day_before_yesterday: string;
-    this_month: string;
-    [key: string]: string;
-  }
-
-  type JobScope = keyof FilterLabels;
+  type FilterLabels = {
+    [key in JobScope]: string;
+  };
 
   const getFilterLabel = (value: JobScope): string => {
     const labels: FilterLabels = {
@@ -279,7 +284,7 @@ const LinkedInScraperDashboard = () => {
   // INITIAL LOAD FETCH JOBS
   useEffect(() => {
     fetchJobs(true);
-  }, []);
+  }, [fetchJobs]);
 
   // PERIODICALLY FETCH JOBS EVERY 5 SECONDS
   useEffect(() => {
@@ -294,7 +299,7 @@ const LinkedInScraperDashboard = () => {
       const intervalId = setInterval(() => fetchJobs(false), 5000);
       return () => clearInterval(intervalId);
     }
-  }, [jobs]);
+  }, [fetchJobs, jobs]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -420,8 +425,8 @@ const LinkedInScraperDashboard = () => {
                     </label>
                     <input
                       type="number"
-                      value={timeout}
-                      onChange={(e) => setTimeout(Number(e.target.value))}
+                      value={timeoutSeconds}
+                      onChange={(e) => setTimeoutSeconds(Number(e.target.value))}
                       className="w-full bg-gray-50 text-gray-900 rounded-lg px-4 py-3 border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all"
                     />
                   </div>
@@ -453,7 +458,7 @@ const LinkedInScraperDashboard = () => {
                 <div className="relative">
                   <button
                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="bg-white cursor-pointer text-gray-900 rounded-lg px-4 py-2.5 border border-gray-300 hover:border-teal-500 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all flex items-center gap-2 min-w-[200px] justify-between"
+                    className="bg-white cursor-pointer text-gray-900 rounded-lg px-4 py-2.5 border border-gray-300 hover:border-teal-500 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all flex items-center gap-2 min-w-50 justify-between"
                   >
                     <span>{getFilterLabel(jobScope)}</span>
                     <ChevronDown
@@ -703,7 +708,7 @@ const LinkedInScraperDashboard = () => {
                         {usageData.totals.this_month}
                       </p>
                     </div>
-                    <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
+                    <div className="bg-linear-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
                       <p className="text-green-100 text-sm mb-2 font-medium">
                         This Year
                       </p>
@@ -711,7 +716,7 @@ const LinkedInScraperDashboard = () => {
                         {usageData.totals.this_year}
                       </p>
                     </div>
-                    <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
+                    <div className="bg-linear-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
                       <p className="text-orange-100 text-sm mb-2 font-medium">
                         Lifetime
                       </p>
@@ -728,14 +733,14 @@ const LinkedInScraperDashboard = () => {
                     Monthly Breakdown
                   </h2>
                   {Object.entries(usageData.monthly_breakdown).map(
-                    ([month, days]) => (
+                    ([month, days]: [string, Record<string, DayData>]) => (
                       <div key={month} className="mb-8 last:mb-0">
                         <h3 className="text-xl font-bold text-teal-600 mb-4 flex items-center">
                           <Calendar className="mr-2 h-6 w-6" />
                           {month}
                         </h3>
                         <div className="space-y-3">
-                          {Object.entries(days).map(([day, data]) => (
+                          {Object.entries(days).map(([day, data]: [string, DayData]) => (
                             <div
                               key={day}
                               className="bg-gray-50 rounded-xl p-5 border border-gray-200"

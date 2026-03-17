@@ -27,7 +27,7 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: Record<string, string> = {};
 
     if (!email) {
       newErrors.email = "Email is required";
@@ -45,7 +45,7 @@ export function LoginForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateForm()) return;
 
@@ -152,7 +152,7 @@ export function LoginForm() {
         </form>
 
         <div className="mt-6 text-center text-sm">
-          <span className="text-muted-foreground">Don't have an account? </span>
+          <span className="text-muted-foreground">Don&apos;t have an account? </span>
           <Link href="/sign-up" className="hover:underline font-medium">
             Sign up
           </Link>

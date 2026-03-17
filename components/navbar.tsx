@@ -183,12 +183,12 @@ export function Navbar(): React.JSX.Element {
         <div className="flex h-16 items-center justify-between">
           {/* Brand */}
           <Link href="/" className="group inline-flex items-center gap-2">
-            <div className="relative h-8 w-8 overflow-hidden rounded-full ring-2 ring-[#1a1a2e] transition-all group-hover:ring-[#0ea5e9]">
+            {/* <div className="relative h-8 w-8 overflow-hidden rounded-full ring-2 ring-[#1a1a2e] transition-all group-hover:ring-[#0ea5e9]">
               <div className="absolute inset-0 bg-linear-to-br from-[#1a1a2e] to-[#2d2d44]" />
               <div className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full bg-[#ace0f9]" />
-            </div>
-            <span className="text-lg font-extrabold tracking-tight text-[#1a1a2e]">
-              Scrayz
+            </div> */}
+            <span className="text-lg font-extrabold tracking-tight text-[#0ea5e9]">
+              SCRAYZ
             </span>
           </Link>
 

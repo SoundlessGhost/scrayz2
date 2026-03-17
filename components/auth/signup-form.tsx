@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 
 import {
@@ -16,16 +17,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
 import { Eye, EyeOff, Loader2, Check, X } from "lucide-react";
 
-export function SignupForm() {
-  const [formData, setFormData] = useState<{ name: string; email: string; password: string; confirmPassword: string }>({
+type FormData = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
 
+export function SignupForm() {
+  const [formData, setFormData] = useState<FormData>({
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
-    lastName: "",
-    firstName: "",
     confirmPassword: "",
   });
 
@@ -35,7 +42,7 @@ export function SignupForm() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
 
-  const calculatePasswordStrength = (password) => {
+  const calculatePasswordStrength = (password: string) => {
     let score = 0;
     const feedback = [];
 
@@ -62,7 +69,7 @@ export function SignupForm() {
   const passwordStrength = calculatePasswordStrength(formData.password);
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: Record<string, string> = {};
 
     if (!formData.firstName.trim()) {
       newErrors.firstName = "First name is required";
@@ -96,7 +103,7 @@ export function SignupForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validateForm()) return;
@@ -116,7 +123,7 @@ export function SignupForm() {
     }, 2000);
   };
 
-  const updateFormData = (field, value) => {
+  const updateFormData = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 

@@ -278,7 +278,7 @@ export function DocsSection() {
 
                     {/* tiny “copied” badge that fades in/out */}
                     <span
-                      className={`pointer-events-none absolute -top-2 right-2 translate-y-[-100%] rounded-md px-2 py-1 text-xs
+                      className={`pointer-events-none absolute -top-2 right-2 -translate-y-full rounded-md px-2 py-1 text-xs
                           transition-opacity ${
                             copied === language ? "opacity-100" : "opacity-0"
                           }
@@ -351,7 +351,7 @@ export function DocsSection() {
                   Important Legal Notice
                 </p>
                 <p className="text-sm text-yellow-700">
-                  Users are responsible for ensuring compliance with LinkedIn's
+                  Users are responsible for ensuring compliance with LinkedIn&apos;s
                   Terms of Service and applicable data protection laws. Only
                   scrape data you have legitimate rights to access.
                 </p>

@@ -9,7 +9,7 @@ export function Toaster() {
   // Let sonner handle theme; no children, no extra props that could be objects.
   return (
     <Sonner
-      theme={theme} // 'light' | 'dark' | 'system'
+      theme={theme as "light" | "dark" | "system"}
       richColors // nicer default colors
       closeButton
       duration={3000}

@@ -141,7 +141,7 @@ const categories = [
 export default function WorkflowsPage() {
   const params = useSearchParams();
   const activeCat = params.get("cat") || "scraper-api";
-  const cards = cardsByCategory[activeCat] ?? [];
+  const cards = cardsByCategory[activeCat as keyof typeof cardsByCategory] ?? [];
 
   const activeLabel = useMemo(
     () => categories.find((c) => c.id === activeCat)?.label ?? "LinkedIn API",
@@ -149,14 +149,14 @@ export default function WorkflowsPage() {
   );
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white">
+    <main className="min-h-screen bg-linear-to-b from-slate-50 via-white to-white">
       {/* HERO — centered + soft gradient background */}
       <section className="relative isolate overflow-hidden pt-14">
         {/* background gradient blobs */}
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
           {/* big center halo */}
           <div
-            className="absolute left-1/2 -top-24 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full blur-3xl"
+            className="absolute left-1/2 -top-24 h-136 w-136 -translate-x-1/2 rounded-full blur-3xl"
             style={{
               background:
                 "radial-gradient(closest-side, rgba(22,78,99,.25), rgba(22,78,99,0))",
@@ -164,7 +164,7 @@ export default function WorkflowsPage() {
           />
           {/* side glow 1 */}
           <div
-            className="absolute left-[15%] top-24 h-[22rem] w-[22rem] rounded-full blur-3xl"
+            className="absolute left-[15%] top-24 h-88 w-88 rounded-full blur-3xl"
             style={{
               background:
                 "radial-gradient(closest-side, rgba(20,184,166,.20), rgba(20,184,166,0))",
@@ -172,7 +172,7 @@ export default function WorkflowsPage() {
           />
           {/* side glow 2 */}
           <div
-            className="absolute right-[12%] top-20 h-[20rem] w-[20rem] rounded-full blur-3xl"
+            className="absolute right-[12%] top-20 h-80 w-[20rem] rounded-full blur-3xl"
             style={{
               background:
                 "radial-gradient(closest-side, rgba(56,189,248,.18), rgba(56,189,248,0))",
@@ -297,7 +297,7 @@ function PBCard({ href, card, activeLabel, idx }: { href: string; card: { id: st
   return (
     <article className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       {/* header strip */}
-      <div className="flex items-center justify-between gap-2 rounded-t-3xl border-b border-slate-100 bg-gradient-to-r from-slate-50 to-slate-100 px-4 py-3">
+      <div className="flex items-center justify-between gap-2 rounded-t-3xl border-b border-slate-100 bg-linear-to-r from-slate-50 to-slate-100 px-4 py-3">
         <span
           className="inline-flex h-8 w-8 items-center justify-center rounded-xl ring-1"
           style={{
@@ -336,7 +336,7 @@ function PBCard({ href, card, activeLabel, idx }: { href: string; card: { id: st
                 key={i}
                 className="flex items-start gap-2 text-[12px] leading-relaxed text-slate-600"
               >
-                <span className="mt-[6px] inline-block h-1.5 w-1.5 flex-none rounded-full bg-slate-400" />
+                <span className="mt-1.5 inline-block h-1.5 w-1.5 flex-none rounded-full bg-slate-400" />
                 <span>{p}</span>
               </li>
             ))}
@@ -364,10 +364,12 @@ function PBCard({ href, card, activeLabel, idx }: { href: string; card: { id: st
       </div>
 
       {/* corner aura */}
-      <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br from-emerald-100 to-transparent opacity-70" />
+      <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-linear-to-br from-emerald-100 to-transparent opacity-70" />
     </article>
   );
 }
+
+type CardData = { id: string; title: string; desc: string };
 
 function AllToolCard({ card, idx }: { card: CardData; idx: number }) {
   const slots = (idx % 3) + 1;

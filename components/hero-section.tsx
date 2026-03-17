@@ -1,5 +1,6 @@
 "use client";
 
+import { slideInRight } from "@/lib/animations";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { Copy, Check, ArrowRight, Shield, Zap, Clock } from "lucide-react";
 import Link from "next/link";
@@ -165,7 +166,7 @@ export default function HeroSection() {
           }}
         />
       </div>
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 w-full py-8 sm:py-12 lg:py-0">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 w-full py-8 sm:py-12 lg:py-0">
         <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20 items-center">
           {/* Left Content */}
           <motion.div
@@ -192,10 +193,10 @@ export default function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-[1.1] tracking-tight text-[#1a1a2e] mb-4 sm:mb-6"
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-[1.1] tracking-tight text-[#1a1a2e] mb-4 sm:mb-6"
             >
-              LinkedIn scraper at scale with no cookies and no risk of account
-              bans.
+              LinkedIn scraper at scale with no cookies and no risk of{" "}
+              <span className="text-[#6e93a3] ">account bans.</span>
             </motion.h1>
 
             {/* Description */}
@@ -258,236 +259,102 @@ export default function HeroSection() {
                 Open Playground
               </a>
             </motion.div>
-
-            {/* Stats - Responsive spacing */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className="grid grid-cols-3 gap-4 sm:gap-6 mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gray-100"
-            >
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.7 + index * 0.1 }}
-                >
-                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1a1a2e]">
-                    <AnimatedNumber value={stat.value} suffix={stat.suffix} />
-                  </div>
-                  <div className="text-xs sm:text-sm text-[#666677]">
-                    {stat.label}
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
           </motion.div>
 
-          {/* Right Content - Code Preview */}
+          {/* Right side: code snippet */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-            className="relative flex justify-center lg:justify-end mt-8 lg:mt-0"
+            variants={slideInRight}
+            initial="hidden"
+            animate="visible"
+            className="relative"
           >
-            <div
-              ref={cardRef}
-              onMouseMove={handleMove}
-              onMouseLeave={handleLeave}
-              style={{
-                transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
-                transformStyle: "preserve-3d",
-              }}
-              className="group relative w-full max-w-sm sm:max-w-md lg:max-w-lg"
-            >
-              {/* Code Block */}
-              <div
-                className="p-4 sm:p-5 shadow-xl rounded-2xl border border-gray-200"
-                style={{
-                  background:
-                    "linear-gradient(145deg, #ffffff 0%, #fff1eb 100%)",
-                }}
-              >
-                {/* Window Controls */}
-                <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                  <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-400" />
-                  <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-yellow-400" />
-                  <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-400" />
-                  <span className="ml-auto rounded-full bg-[#ace0f9]/30 px-2 sm:px-2.5 py-0.5 text-[8px] sm:text-[10px] font-medium text-[#1a1a2e]">
-                    Quick Start
+            <div className="rounded-xl bg-background-secondary border border-border overflow-hidden shadow-lg">
+              {/* Request */}
+              <div className="px-5 py-3 border-b border-border flex items-center gap-2">
+                <span className="inline-block w-3 h-3 rounded-full bg-red-400" />
+                <span className="inline-block w-3 h-3 rounded-full bg-yellow-400" />
+                <span className="inline-block w-3 h-3 rounded-full bg-green-400" />
+                <span className="ml-3 text-xs font-mono text-foreground-muted">
+                  Request
+                </span>
+              </div>
+              <div className="px-5 py-4 font-mono text-xs sm:text-sm leading-relaxed text-foreground overflow-x-auto">
+                <pre className="whitespace-pre-wrap">
+                  <span className="text-green-600">curl</span>{" "}
+                  <span className="text-blue-600">-X POST</span>{" "}
+                  https://api.scrayz.com/linkedin/profile \{"\n"}
+                  {"  "}-H{" "}
+                  <span className="text-amber-600">
+                    &quot;Authorization: Bearer sk_live_...&quot;
+                  </span>{" "}
+                  \{"\n"}
+                  {"  "}-H{" "}
+                  <span className="text-amber-600">
+                    &quot;Content-Type: application/json&quot;
+                  </span>{" "}
+                  \{"\n"}
+                  {"  "}-d{" "}
+                  <span className="text-amber-600">
+                    {'\'{"url": "https://linkedin.com/in/example"}\''}
                   </span>
-                </div>
-
-                {/* Code Content - Responsive text size */}
-                <div className="rounded-lg bg-[#383838] p-3 sm:p-4">
-                  <pre className="text-[10px] sm:text-[11px] md:text-[13px] leading-relaxed font-mono text-gray-300 overflow-x-auto pb-3 sm:pb-5">
-                    <code>
-                      <span className="text-[#ace0f9]">{"// Request"}</span>
-                      {"\n"}
-                      <span className="text-[#87ceeb]">POST</span>{" "}
-                      <span className="text-[#fff1eb] break-all">
-                        https://api.scrayz.com/profile/full
-                      </span>
-                      {"\n\n"}
-                      <span className="text-[#ace0f9]">{"// Response"}</span>
-                      {"\n"}
-                      {"{ "} <br />
-                      {"  "}
-                      <span className="text-[#fff1eb]">
-                        &quot;scrapingDate&quot;
-                      </span>
-                      :{" "}
-                      <span className="text-green-400">
-                        &quot;1773650462940&quot;
-                      </span>
-                      ,{"\n"}
-                      {"  "}
-                      <span className="text-[#fff1eb]">
-                        &quot;memberIdentity&quot;
-                      </span>
-                      :{" "}
-                      <span className="text-green-400">
-                        &quot;sundarpichai&quot;
-                      </span>
-                      ,{"\n"}
-                      {"  "}
-                      <span className="text-[#fff1eb]">
-                        &quot;profileLink&quot;
-                      </span>
-                      :{" "}
-                      <span className="text-green-400 break-all">
-                        &quot;https://www.linkedin.com/in/sundarpichai&quot;
-                      </span>
-                      ,{"\n"}
-                      {"  "}
-                      <span className="text-[#fff1eb]">
-                        &quot;profileUrn&quot;
-                      </span>
-                      : {/* Show truncated on mobile */}
-                      <span className="text-green-400 hidden sm:inline">
-                        &quot;ACoAAE6FVtYBAW4bP82g1IhIHxzu_1J010WU3CQ&quot;
-                      </span>
-                      <span className="text-green-400 sm:hidden">
-                        &quot;ACoAAE6FVtY...&quot;
-                      </span>
-                      ,{"\n"}
-                      {"  "}
-                      <span className="text-[#fff1eb]">
-                        &quot;linkedinId&quot;
-                      </span>
-                      :{" "}
-                      <span className="text-green-400">
-                        &quot;1317361366&quot;
-                      </span>
-                      ,{"\n"}
-                      {"  "}
-                      <span className="text-[#fff1eb]">
-                        &quot;fullName&quot;
-                      </span>
-                      :{" "}
-                      <span className="text-green-400">
-                        &quot;Sundar Pichai&quot;
-                      </span>
-                      ,{"\n"}
-                      {"  "}
-                      <span className="text-[#fff1eb]">
-                        &quot;headline&quot;
-                      </span>
-                      :{" "}
-                      <span className="text-green-400">
-                        &quot;CEO at Google&quot;
-                      </span>
-                      ,{"\n"}
-                      {/* Hide profile_about on mobile */}
-                      <span className="hidden sm:inline">
-                        {"  "}
-                        <span className="text-[#fff1eb]">
-                          &quot;profile_about&quot;
-                        </span>
-                        :{" "}
-                        <span className="text-green-400">
-                          &quot;CEO of Google and Alphabet...&quot;
-                        </span>
-                        ,{"\n"}
-                      </span>
-                      {"  "}
-                      <span className="text-[#fff1eb]">
-                        &quot;fullLocation&quot;
-                      </span>
-                      : {/* Truncate location on mobile */}
-                      <span className="text-green-400 hidden sm:inline">
-                        &quot;Mountain View, California, United States&quot;
-                      </span>
-                      <span className="text-green-400 sm:hidden">
-                        &quot;Mountain View, CA&quot;
-                      </span>
-                      ,{"\n"}
-                      {"  "}
-                      ... ... ...
-                      {"\n}"}
-                    </code>
-                  </pre>
-                </div>
-
-                {/* Copy Bar */}
-                <div className="mt-3 sm:mt-4 flex items-center gap-2">
-                  <div className="flex-1 rounded-lg border border-gray-200 bg-white px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs text-[#666677]">
-                    Copy cURL Command
-                  </div>
-                  <button
-                    onClick={handleCopy}
-                    className="inline-flex items-center gap-1.5 sm:gap-2 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-medium text-[#1a1a2e] transition-all duration-300 hover:opacity-90 cursor-pointer"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, #ace0f9 0%, #87ceeb 100%)",
-                    }}
-                  >
-                    {copied ? (
-                      <Check className="h-3 w-3 sm:h-4 sm:w-4" />
-                    ) : (
-                      <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
-                    )}
-                    {copied ? "Copied!" : "Copy"}
-                  </button>
-                </div>
+                </pre>
               </div>
 
-              {/* Floating Feature Pills - Hidden on mobile, visible on md+ */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 1.1 }}
-                className="absolute -top-4 -right-4 lg:-right-12 hidden md:flex flex-col gap-2"
-              >
-                <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white rounded-full shadow-lg border border-gray-100">
-                  <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0ea5e9]" />
-                  <span className="text-xs sm:text-sm font-medium text-[#1a1a2e]">
-                    Fast
+              {/* Response */}
+              <div className="px-5 py-3 border-t border-border">
+                <span className="text-xs font-mono text-foreground-muted">
+                  Response{" "}
+                  <span className="text-green-600 font-semibold">200 OK</span>
+                </span>
+              </div>
+              <div className="px-5 py-4 font-mono text-xs sm:text-sm leading-relaxed text-foreground overflow-x-auto">
+                <pre className="whitespace-pre-wrap">
+                  {"{\n"}
+                  {"  "}
+                  <span className="text-blue-600">&quot;name&quot;</span>:{" "}
+                  <span className="text-amber-600">&quot;John Doe&quot;</span>,
+                  {"\n"}
+                  {"  "}
+                  <span className="text-blue-600">&quot;title&quot;</span>:{" "}
+                  <span className="text-amber-600">
+                    &quot;Senior Engineer&quot;
                   </span>
-                </div>
-                <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white rounded-full shadow-lg border border-gray-100">
-                  <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0ea5e9]" />
-                  <span className="text-xs sm:text-sm font-medium text-[#1a1a2e]">
-                    Safe
+                  ,{"\n"}
+                  {"  "}
+                  <span className="text-blue-600">
+                    &quot;company&quot;
+                  </span>:{" "}
+                  <span className="text-amber-600">&quot;TechCorp&quot;</span>,
+                  {"\n"}
+                  {"  "}
+                  <span className="text-blue-600">
+                    &quot;country&quot;
+                  </span>:{" "}
+                  <span className="text-amber-600">
+                    &quot;United State&quot;
                   </span>
-                </div>
-                <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white rounded-full shadow-lg border border-gray-100">
-                  <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0ea5e9]" />
-                  <span className="text-xs sm:text-sm font-medium text-[#1a1a2e]">
-                    99.9%
+                  ,{"\n"}
+                  {"  "}
+                  <span className="text-blue-600">
+                    &quot;profile_about&quot;
                   </span>
-                </div>
-              </motion.div>
-
-              {/* Glow effect on hover */}
-              <div
-                className="pointer-events-none absolute inset-0 -z-10 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                style={{
-                  boxShadow:
-                    "0 0 0 1px rgba(172,224,249,0.3), 0 24px 80px -24px rgba(172,224,249,0.5)",
-                }}
-              />
+                  :{" "}
+                  <span className="text-amber-600">
+                    &quot;Experienced Frontend Web Developer with 4+ years
+                    of&quot;
+                  </span>
+                  ,{"\n"}
+                  {"  "}
+                  <span className="text-blue-600">
+                    &quot;location&quot;
+                  </span>:{" "}
+                  <span className="text-amber-600">
+                    &quot;San Francisco, CA&quot;
+                  </span>
+                  {"\n"}
+                  {"}"}
+                </pre>
+              </div>
             </div>
           </motion.div>
         </div>

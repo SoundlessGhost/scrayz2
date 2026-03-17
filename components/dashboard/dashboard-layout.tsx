@@ -25,7 +25,6 @@ import { Button } from "@/components/ui/button";
 import { UsageAnalytics } from "./usage-analytics";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import Image from "next/image";
 
 export function DashboardLayout() {
   const { user } = useUser();
@@ -45,7 +44,7 @@ export function DashboardLayout() {
         description: "Key loaded securely from server.",
       });
     } catch (e) {
-      toast("Couldn’t load key", { description: String(e.message || e) });
+      toast("Couldn’t load key", { description: e instanceof Error ? e.message : String(e) });
     } finally {
       setLoadingKey(false);
     }
@@ -354,6 +353,6 @@ export function DashboardLayout() {
   );
 }
 
-function Label({ children, className }) {
+function Label({ children, className }: { children: React.ReactNode; className?: string }) {
   return <div className={className}>{children}</div>;
 }
